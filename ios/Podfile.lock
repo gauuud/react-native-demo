@@ -256,10 +256,16 @@ PODS:
     - React
   - RNScreens (2.7.0):
     - React
+  - RNSentry (2.2.0):
+    - React-Core
+    - Sentry (= 6.1.4)
   - RNVectorIcons (6.6.0):
     - React
   - RNVoipPushNotification (2.1.0):
     - React-Core
+  - Sentry (6.1.4):
+    - Sentry/Core (= 6.1.4)
+  - Sentry/Core (6.1.4)
   - VoxImplantSDK (2.34.2):
     - VoxImplantSDK/Core (= 2.34.2)
   - VoxImplantSDK/Core (2.34.2):
@@ -302,6 +308,7 @@ DEPENDENCIES:
   - "RNCMaskedView (from `../node_modules/@react-native-community/masked-view`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - RNVoipPushNotification (from `../node_modules/react-native-voip-push-notification/RNVoipPushNotification.podspec`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -309,6 +316,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - boost-for-react-native
+    - Sentry
     - VoxImplantSDK
     - VoxImplantWebRTC
 
@@ -375,6 +383,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSentry:
+    :path: "../node_modules/@sentry/react-native"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
   RNVoipPushNotification:
@@ -415,8 +425,10 @@ SPEC CHECKSUMS:
   RNCMaskedView: 5a8ec07677aa885546a0d98da336457e2bea557f
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
   RNScreens: cf198f915f8a2bf163de94ca9f5bfc8d326c3706
+  RNSentry: 6aeba1adc242fd22a6826acae92f430697b47a9c
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   RNVoipPushNotification: 6b38227bbbb2359dc11cbf826044f8ed4bd8de36
+  Sentry: 9d055e2de30a77685e86b219acf02e59b82091fc
   VoxImplantSDK: e999fc6879fb6f11fe4e1cb4b17e2811c15b44e3
   VoxImplantWebRTC: 1931752e5ad3eb595a59f426b858dab04250dbba
   Yoga: 3ebccbdd559724312790e7742142d062476b698e

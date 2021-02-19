@@ -16,7 +16,7 @@ import {
     SafeAreaView,
     StatusBar,
 } from 'react-native';
-
+import * as Sentry from "@sentry/react-native";
 import AsyncStorage from '@react-native-community/async-storage';
 import LoginManager from '../manager/LoginManager';
 import COLOR_SCHEME from '../styles/ColorScheme';
@@ -83,6 +83,10 @@ export default class LoginScreen extends React.Component {
         LoginManager.getInstance().loginWithOneTimeKey(this.state.username + '.voximplant.com', this.password);
     }
 
+    errorClicked() {
+        Sentry.nativeCrash();
+    }
+
     _focusNextField(nextField) {
         this.refs[nextField].focus();
     }
@@ -122,6 +126,11 @@ export default class LoginScreen extends React.Component {
                             <TouchableOpacity onPress={() => this.loginWithOneTimeKeyClicked()} style={{ width: 220, alignSelf: 'center' }}>
                                 <Text style={styles.loginbutton}>
                                     LOGIN WITH ONE TIME KEY
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => this.errorClicked()} style={{ width: 220, alignSelf: 'center' }}>
+                                <Text style={styles.loginbutton}>
+                                    ERROR
                                 </Text>
                             </TouchableOpacity>
                         </View>

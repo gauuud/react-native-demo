@@ -6,7 +6,8 @@
     "start": "react-native start",
     "postinstall": "sed -i '' 's/\\/Core//g' ./node_modules/react-native-voip-push-notification/RNVoipPushNotification.podspec; sed -i '' 's/\\/Core//g' ./node_modules/react-native-callkeep/RNCallKeep.podspec",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "jetify": "npx jetify"
   },
   "dependencies": {
     "@react-native-community/async-storage": "1.10.0",

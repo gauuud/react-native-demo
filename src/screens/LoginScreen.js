@@ -84,6 +84,9 @@ export default class LoginScreen extends React.Component {
     }
 
     errorClicked() {
+        Sentry.captureException(new Error('test'));
+    }
+    errorClicked2() {
         Sentry.nativeCrash();
     }
 
@@ -131,6 +134,11 @@ export default class LoginScreen extends React.Component {
                             <TouchableOpacity onPress={() => this.errorClicked()} style={{ width: 220, alignSelf: 'center' }}>
                                 <Text style={styles.loginbutton}>
                                     ERROR
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => this.errorClicked2()} style={{ width: 220, alignSelf: 'center' }}>
+                                <Text style={styles.loginbutton}>
+                                    ERROR2
                                 </Text>
                             </TouchableOpacity>
                         </View>

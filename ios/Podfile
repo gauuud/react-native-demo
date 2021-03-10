@@ -1,6 +1,11 @@
 platform :ios, '9.0'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
+project 'Flavour',
+'Debug' => :debug,
+'Release' => :release,
+'Staging' => :release
+
 target 'VoximplantDemo' do
     # Pods for VoximplantDemo
     pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"

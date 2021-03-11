@@ -79,6 +79,12 @@ import com.android.build.OutputFile
 
 project.ext.react = [
         enableHermes: false,  // clean and rebuild if changing
+    
+    entryFile: "index.js",
+    extraPackagerArgs: ["--sourcemap-output", file("$buildDir/../../../sourcemap.js")],
+
+    bundleInStaging: true,
+    devDisabledInStaging: true,
 ]
 
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
@@ -137,7 +143,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
+        multiDexEnabled true,
+        resValue "string", "build_config_package", "com.voximplantdemo"
     }
     splits {
         abi {
@@ -154,18 +161,18 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file(MYAPP_UPLOAD_STORE_FILE)
-                storePassword MYAPP_UPLOAD_STORE_PASSWORD
-                keyAlias MYAPP_UPLOAD_KEY_ALIAS
-                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
-            }
-        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
+        }
+        staging {
+            minifyEnabled enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            signingConfig signingConfigs.debug
+            applicationIdSuffix ".staging"
+            matchingFallbacks = ['debug', 'release']
         }
         release {
             // Caution! In production, you need to generate your own keystore file.

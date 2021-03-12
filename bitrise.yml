@@ -15,7 +15,7 @@ workflows:
     - set-xcode-build-number@1:
         inputs:
         - build_short_version_string: $VERSION_NUMBER
-        - plist_path: ./ios/cheer_mobile_app/Info.plist
+        - plist_path: ./ios/VoximplantDemo/Info.plist
     - yarn@0:
         inputs:
         - command: install
@@ -227,11 +227,7 @@ app:
     - set-xcode-build-number@1:
         inputs:
         - build_short_version_string: $VERSION_NUMBER
-        - plist_path: ./ios/cheer_mobile_app/Info.plist
-    - script@1:
-        title: amplify init
-        inputs:
-        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\nIFS='|'\n\n# debug log\nset -x\n\n# Install amplify\nnpm install -g @aws-amplify/cli\n\n# Init amplify\nREACTNATIVECONFIG=\"{\\\n\\\"SourceDir\\\":\\\".\\\",\\\n\\\"DistributionDir\\\":\\\"build\\\",\\\n\\\"BuildCommand\\\":\\\"yarn build\\\",\\\n\\\"StartCommand\\\":\\\"yarn start\\\"\\,\n\\\"resDir\\\":\\\"app/src/main/res\\\",\\\n}\"\nAWSCLOUDFORMATIONCONFIG=\"{\\\n\\\"configLevel\\\":\\\"project\\\",\\\n\\\"useProfile\\\":false,\\\n\\\"profileName\\\":\\\"default\\\",\\\n\\\"accessKeyId\\\":\\\"$AWS_ACCESS_KEY_ID\\\",\\\n\\\"secretAccessKey\\\":\\\"$AWS_SECRET_ACCESS_KEY\\\",\\\n\\\"region\\\":\\\"ap-northeast-1\\\"\\\n}\"\nAMPLIFY=\"{\\\n\\\"projectName\\\":\\\"cheer_web_app\\\",\\\n\\\"appId\\\":\\\"$AWS_APP_ID\\\",\\\n\\\"envName\\\":\\\"$AWS_AMPLIFY_ENV\\\",\\\n\\\"defaultEditor\\\":\\\"code\\\"\\\n}\"\nFRONTEND=\"{\\\n\\\"frontend\\\":\\\"javascript\\\",\\\n\\\"framework\\\":\\\"react-native\\\",\\\n\\\"config\\\":$REACTNATIVECONFIG\\\n}\"\nPROVIDERS=\"{\\\n\\\"awscloudformation\\\":$AWSCLOUDFORMATIONCONFIG\\\n}\"\nNOTIFICATIONSCONFIG=\"{\\\n\\\"Pinpoint\\\":{\t\n\\\"FCM\\\":{\n\\\"Enabled\\\":true,\\\n\\\"ApiKey\\\":\\\"$AWS_DEV_ANDROID_NOTIFICAIONS_API_KEY\\\"\\\n}\\\n}\\\n}\"\nCATEGORIES=\"{\\\n\\\"notifications\\\":$NOTIFICATIONSCONFIG\\\n}\"\n\namplify init \\\n--amplify $AMPLIFY \\\n--frontend $FRONTEND \\\n--providers $PROVIDERS \\\n--yes\n\n# --categories $CATEGORIES \\"
+        - plist_path: ./ios/VoximplantDemo/Info.plist
     - yarn@0: {}
     - cocoapods-install@2: {}
     - script@1:

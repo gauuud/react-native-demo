@@ -1,10 +1,10 @@
 ---
 format_version: '8'
-default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+default_step_lib_source: 'https://github.com/bitrise-io/bitrise-steplib.git'
 project_type: react-native
 workflows:
   deploy-ios-adhoc:
-    description: ""
+    description: ''
     steps:
     - activate-ssh-key@4:
         run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
@@ -14,29 +14,37 @@ workflows:
         title: Do anything with Script step
     - set-xcode-build-number@1:
         inputs:
-        - build_short_version_string: "$VERSION_NUMBER"
-        - plist_path: "./ios/cheer_mobile_app/Info.plist"
+        - build_short_version_string: $VERSION_NUMBER
+        - plist_path: ./ios/cheer_mobile_app/Info.plist
     - yarn@0:
         inputs:
         - command: install
     - cocoapods-install@2: {}
     - script@1:
         inputs:
-        - content: |-
+        - content: >-
             #!/usr/bin/env bash
+
             # fail if any commands fails
+
             set -e
+
             # debug log
+
             set -x
 
+
             # Create bundle for iOS
-            npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle  --assets-dest ios --sourcemap-output ./main.jsbundle.map
+
+            npx react-native bundle --platform ios --dev false --entry-file
+            index.js --bundle-output ios/main.jsbundle  --assets-dest ios
+            --sourcemap-output ./main.jsbundle.map
         title: Create iOS bundle
     - certificate-and-profile-installer@1: {}
     - xcode-archive@3:
         inputs:
         - project_path: $BITRISE_PROJECT_PATH
-        - scheme: "$BITRISE_SCHEME"
+        - scheme: $BITRISE_SCHEME
         - export_method: ad-hoc
         - force_code_sign_identity: iPhone Distribution
         - configuration: $BITRISE_SCHEME
@@ -60,7 +68,6 @@ workflows:
     - yarn@0:
         inputs:
         - command: install
-    - install-react-native@0: {}
     - install-missing-android-tools@2:
         inputs:
         - gradlew_path: $PROJECT_LOCATION/gradlew
@@ -70,17 +77,24 @@ workflows:
     - script@1:
         title: Create Android bundle
         inputs:
-        - content: |-
+        - content: >-
             #!/usr/bin/env bash
+
             # fail if any commands fails
+
             set -e
+
             # debug log
+
             set -x
+
 
             # create bundle
             npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output  --sourcemap-output android/app/src/main/assets/index.android.bundle android/app/src/main/assets/index.android.bundle.map --assets-dest android/app/src/main/res
             # delete duplicate resources
+
             rm -rf android/app/src/main/res/drawable-*
+
             rm -rf android/app/src/main/res/raw
     - gradle-runner@1:
         inputs:
@@ -184,7 +198,7 @@ app:
     MODULE: app
   - opts:
       is_expand: false
-    VARIANT: ''
+    VARIANT: Staging
   - opts:
       is_expand: false
     BITRISE_PROJECT_PATH: ios/VoximplantDemo.xcworkspace

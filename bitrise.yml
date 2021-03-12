@@ -46,7 +46,6 @@ workflows:
         - project_path: $BITRISE_PROJECT_PATH
         - scheme: Release
         - export_method: ad-hoc
-        - force_code_sign_identity: iPhone Distribution
         - configuration: Release
     - deploy-to-bitrise-io@1: {}
     - cache-push@2: {}

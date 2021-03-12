@@ -204,7 +204,7 @@ app:
     BITRISE_PROJECT_PATH: ios/VoximplantDemo.xcworkspace
   - opts:
       is_expand: false
-    BITRISE_SCHEME: VoximplantDemo
+    BITRISE_SCHEME: Release
   - opts:
       is_expand: false
     BITRISE_EXPORT_METHOD: ad-hoc

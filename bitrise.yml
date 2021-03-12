@@ -44,10 +44,10 @@ workflows:
     - xcode-archive@3:
         inputs:
         - project_path: $BITRISE_PROJECT_PATH
-        - scheme: $BITRISE_SCHEME
+        - scheme: Release
         - export_method: ad-hoc
         - force_code_sign_identity: iPhone Distribution
-        - configuration: $BITRISE_SCHEME
+        - configuration: Release
     - deploy-to-bitrise-io@1: {}
     - cache-push@2: {}
     envs:

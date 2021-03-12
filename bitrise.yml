@@ -294,3 +294,6 @@ app:
     - opts:
         is_expand: false
       BUNDLE_ID: gauuud.VoximplantDemo.debug
+trigger_map:
+- tag: iOS-*.*.*
+  workflow: deploy-ios-adhoc

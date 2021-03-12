@@ -12,94 +12,14 @@ workflows:
     - cache-pull@2: {}
     - script@1:
         title: Do anything with Script step
+    - set-xcode-build-number@1:
+        inputs:
+        - build_short_version_string: "$VERSION_NUMBER"
+        - plist_path: "./ios/cheer_mobile_app/Info.plist"
     - yarn@0:
         inputs:
         - command: install
-    - certificate-and-profile-installer@1: {}
     - cocoapods-install@2: {}
-    - xcode-archive@3:
-        inputs:
-        - project_path: "$BITRISE_PROJECT_PATH"
-        - scheme: "$BITRISE_SCHEME"
-        - export_method: "$BITRISE_EXPORT_METHOD"
-        - force_code_sign_identity: iPhone Distribution
-        - configuration: Release
-    - deploy-to-bitrise-io@1: {}
-    - cache-push@2: {}
-  deploy-android:
-    description: ""
-    steps:
-    - activate-ssh-key@4:
-        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
-    - git-clone@4: {}
-    - cache-pull@2: {}
-    - script@1:
-        title: Do anything with Script step
-    - file-downloader@1:
-        inputs:
-        - destination: "$PROJECT_LOCATION/gradle.properties"
-        - source: "$BITRISEIO_BITRISEIO_gradleprop_URL_URL"
-    - yarn@0:
-        inputs:
-        - command: install
-    - install-react-native@0: {}
-    - install-missing-android-tools@2:
-        inputs:
-        - gradlew_path: "$PROJECT_LOCATION/gradlew"
-    - npm@1:
-        inputs:
-        - command: run jetify
-    - gradle-runner@1:
-        inputs:
-        - gradle_file: "./android/build.gradle"
-        - gradlew_path: "./android/gradlew"
-        - gradle_task: assembleRelease
-    - sign-apk@1: {}
-    - deploy-to-bitrise-io@1: {}
-    - cache-push@2: {}
-  deploy-ios-store:
-    description: ""
-    steps:
-    - activate-ssh-key@4:
-        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
-    - git-clone@4: {}
-    - cache-pull@2: {}
-    - script@1:
-        title: Do anything with Script step
-    - yarn@0:
-        inputs:
-        - command: install
-    - certificate-and-profile-installer@1: {}
-    - cocoapods-install@2: {}
-    - xcode-archive@3:
-        inputs:
-        - project_path: "$BITRISE_PROJECT_PATH"
-        - scheme: "$BITRISE_SCHEME"
-        - export_method: "$BITRISE_EXPORT_METHOD"
-        - configuration: Release
-    - git::https://github.com/SimonRice/bitrise-step-sentry-dsym-upload.git@main:
-        inputs:
-        - sentry_project_slug: "$SENTRY_PROJECT_SLUG"
-        - sentry_org_slug: "$SENTRY_ORG_SLUG"
-    - deploy-to-itunesconnect-deliver@2:
-        inputs:
-        - bundle_id: gauuud.VoximplantDemo
-        - connection: api_key
-        - api_key_path: "$BITRISEIO_iTunesConnect_URL"
-        - api_issuer: cb000952-2a46-4af9-820d-a32c6d879b5f
-    - cache-push@2: {}
-  deploy-ios-debug:
-    description: ""
-    steps:
-    - activate-ssh-key@4:
-        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
-    - git-clone@4: {}
-    - cache-pull@2: {}
-    - script@1:
-        title: Do anything with Script step
-    - yarn@0:
-        inputs:
-        - command: install
     - script@1:
         inputs:
         - content: |-
@@ -109,21 +29,147 @@ workflows:
             # debug log
             set -x
 
-            # write your script here
-            echo "Hello World!"
+            # Create bundle for iOS
+            npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle  --assets-dest ios --sourcemap-output ./main.jsbundle.map
+        title: Create iOS bundle
+    - certificate-and-profile-installer@1: {}
+    - xcode-archive@3:
+        inputs:
+        - project_path: $BITRISE_PROJECT_PATH
+        - scheme: "$BITRISE_SCHEME"
+        - export_method: ad-hoc
+        - force_code_sign_identity: iPhone Distribution
+        - configuration: $BITRISE_SCHEME
+    - deploy-to-bitrise-io@1: {}
+    - cache-push@2: {}
+    envs:
+    - $BITRISE_SCHEME: Staging
+  deploy-android:
+    description: ''
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@4: {}
+    - cache-pull@2: {}
+    - script@1:
+        title: Do anything with Script step
+    - file-downloader@1:
+        inputs:
+        - destination: $PROJECT_LOCATION/gradle.properties
+        - source: $BITRISEIO_BITRISEIO_gradleprop_URL_URL
+    - yarn@0:
+        inputs:
+        - command: install
+    - install-react-native@0: {}
+    - install-missing-android-tools@2:
+        inputs:
+        - gradlew_path: $PROJECT_LOCATION/gradlew
+    - npm@1:
+        inputs:
+        - command: run jetify
+    - script@1:
+        title: Create Android bundle
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
 
-            # or run a script from your repository, like:
-            # bash ./path/to/script.sh
-            # not just bash, e.g.:
-            # ruby ./path/to/script.rb
-            npx react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios' --assets-dest='./ios'
+            # create bundle
+            npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output  --sourcemap-output android/app/src/main/assets/index.android.bundle android/app/src/main/assets/index.android.bundle.map --assets-dest android/app/src/main/res
+            # delete duplicate resources
+            rm -rf android/app/src/main/res/drawable-*
+            rm -rf android/app/src/main/res/raw
+    - gradle-runner@1:
+        inputs:
+        - gradle_file: ./android/build.gradle
+        - gradlew_path: ./android/gradlew
+        - gradle_task: assembleRelease
+    - sign-apk@1: {}
+    - deploy-to-bitrise-io@1: {}
+    - cache-push@2: {}
+  deploy-ios-store:
+    description: ''
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@4: {}
+    - cache-pull@2: {}
+    - script@1:
+        title: Do anything with Script step
+    - yarn@0:
+        inputs:
+        - command: install
     - certificate-and-profile-installer@1: {}
     - cocoapods-install@2: {}
     - xcode-archive@3:
         inputs:
-        - project_path: "$BITRISE_PROJECT_PATH"
-        - scheme: "$BITRISE_SCHEME"
-        - export_method: "$BITRISE_EXPORT_METHOD"
+        - project_path: $BITRISE_PROJECT_PATH
+        - scheme: $BITRISE_SCHEME
+        - export_method: $BITRISE_EXPORT_METHOD
+        - configuration: Release
+    - 'git::https://github.com/SimonRice/bitrise-step-sentry-dsym-upload.git@main':
+        inputs:
+        - sentry_project_slug: $SENTRY_PROJECT_SLUG
+        - sentry_org_slug: $SENTRY_ORG_SLUG
+    - deploy-to-itunesconnect-deliver@2:
+        inputs:
+        - bundle_id: gauuud.VoximplantDemo
+        - connection: api_key
+        - api_key_path: $BITRISEIO_iTunesConnect_URL
+        - api_issuer: cb000952-2a46-4af9-820d-a32c6d879b5f
+    - cache-push@2: {}
+  deploy-ios-debug:
+    description: ''
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@4: {}
+    - cache-pull@2: {}
+    - script@1:
+        title: Do anything with Script step
+    - yarn@0:
+        inputs:
+        - command: install
+    - script@1:
+        inputs:
+        - content: >-
+            #!/usr/bin/env bash
+
+            # fail if any commands fails
+
+            set -e
+
+            # debug log
+
+            set -x
+
+
+            # write your script here
+
+            echo "Hello World!"
+
+
+            # or run a script from your repository, like:
+
+            # bash ./path/to/script.sh
+
+            # not just bash, e.g.:
+
+            # ruby ./path/to/script.rb
+
+            npx react-native bundle --entry-file='index.js'
+            --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'
+            --assets-dest='./ios' --sourcemap-output ios/main.jsbundle.map
+    - certificate-and-profile-installer@1: {}
+    - cocoapods-install@2: {}
+    - xcode-archive@3:
+        inputs:
+        - project_path: $BITRISE_PROJECT_PATH
+        - scheme: $BITRISE_SCHEME
+        - export_method: $BITRISE_EXPORT_METHOD
         - force_code_sign_identity: iPhone Development
         - configuration: Release
     - deploy-to-bitrise-io@1: {}
@@ -154,7 +200,6 @@ app:
   - opts:
       is_expand: false
     SENTRY_PROJECT_SLUG: react-native
-
   build-ios-alpha:
     steps:
     - activate-ssh-key@4: {}
@@ -162,42 +207,45 @@ app:
     - cache-pull@2: {}
     - file-downloader@1:
         inputs:
-        - destination: ".env"
-        - source: "$BITRISEIO_ENV_URL"
-        title: ".env Download"
+        - destination: .env
+        - source: $BITRISEIO_ENV_URL
+        title: .env Download
     - set-xcode-build-number@1:
         inputs:
-        - build_short_version_string: "$VERSION_NUMBER"
-        - plist_path: "./ios/cheer_mobile_app/Info.plist"
+        - build_short_version_string: $VERSION_NUMBER
+        - plist_path: ./ios/cheer_mobile_app/Info.plist
     - script@1:
         title: amplify init
         inputs:
-        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\nIFS='|'\n\n#
-            debug log\nset -x\n\n# Install amplify\nnpm install -g @aws-amplify/cli\n\n#
-            Init amplify\nREACTNATIVECONFIG=\"{\\\n\\\"SourceDir\\\":\\\".\\\",\\\n\\\"DistributionDir\\\":\\\"build\\\",\\\n\\\"BuildCommand\\\":\\\"yarn
-            build\\\",\\\n\\\"StartCommand\\\":\\\"yarn start\\\"\\,\n\\\"resDir\\\":\\\"app/src/main/res\\\",\\\n}\"\nAWSCLOUDFORMATIONCONFIG=\"{\\\n\\\"configLevel\\\":\\\"project\\\",\\\n\\\"useProfile\\\":false,\\\n\\\"profileName\\\":\\\"default\\\",\\\n\\\"accessKeyId\\\":\\\"$AWS_ACCESS_KEY_ID\\\",\\\n\\\"secretAccessKey\\\":\\\"$AWS_SECRET_ACCESS_KEY\\\",\\\n\\\"region\\\":\\\"ap-northeast-1\\\"\\\n}\"\nAMPLIFY=\"{\\\n\\\"projectName\\\":\\\"cheer_web_app\\\",\\\n\\\"appId\\\":\\\"$AWS_APP_ID\\\",\\\n\\\"envName\\\":\\\"$AWS_AMPLIFY_ENV\\\",\\\n\\\"defaultEditor\\\":\\\"code\\\"\\\n}\"\nFRONTEND=\"{\\\n\\\"frontend\\\":\\\"javascript\\\",\\\n\\\"framework\\\":\\\"react-native\\\",\\\n\\\"config\\\":$REACTNATIVECONFIG\\\n}\"\nPROVIDERS=\"{\\\n\\\"awscloudformation\\\":$AWSCLOUDFORMATIONCONFIG\\\n}\"\nNOTIFICATIONSCONFIG=\"{\\\n\\\"Pinpoint\\\":{\t\n\\\"FCM\\\":{\n\\\"Enabled\\\":true,\\\n\\\"ApiKey\\\":\\\"$AWS_DEV_ANDROID_NOTIFICAIONS_API_KEY\\\"\\\n}\\\n}\\\n}\"\nCATEGORIES=\"{\\\n\\\"notifications\\\":$NOTIFICATIONSCONFIG\\\n}\"\n\namplify
-            init \\\n--amplify $AMPLIFY \\\n--frontend $FRONTEND \\\n--providers $PROVIDERS
-            \\\n--yes\n\n# --categories $CATEGORIES \\"
+        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\nIFS='|'\n\n# debug log\nset -x\n\n# Install amplify\nnpm install -g @aws-amplify/cli\n\n# Init amplify\nREACTNATIVECONFIG=\"{\\\n\\\"SourceDir\\\":\\\".\\\",\\\n\\\"DistributionDir\\\":\\\"build\\\",\\\n\\\"BuildCommand\\\":\\\"yarn build\\\",\\\n\\\"StartCommand\\\":\\\"yarn start\\\"\\,\n\\\"resDir\\\":\\\"app/src/main/res\\\",\\\n}\"\nAWSCLOUDFORMATIONCONFIG=\"{\\\n\\\"configLevel\\\":\\\"project\\\",\\\n\\\"useProfile\\\":false,\\\n\\\"profileName\\\":\\\"default\\\",\\\n\\\"accessKeyId\\\":\\\"$AWS_ACCESS_KEY_ID\\\",\\\n\\\"secretAccessKey\\\":\\\"$AWS_SECRET_ACCESS_KEY\\\",\\\n\\\"region\\\":\\\"ap-northeast-1\\\"\\\n}\"\nAMPLIFY=\"{\\\n\\\"projectName\\\":\\\"cheer_web_app\\\",\\\n\\\"appId\\\":\\\"$AWS_APP_ID\\\",\\\n\\\"envName\\\":\\\"$AWS_AMPLIFY_ENV\\\",\\\n\\\"defaultEditor\\\":\\\"code\\\"\\\n}\"\nFRONTEND=\"{\\\n\\\"frontend\\\":\\\"javascript\\\",\\\n\\\"framework\\\":\\\"react-native\\\",\\\n\\\"config\\\":$REACTNATIVECONFIG\\\n}\"\nPROVIDERS=\"{\\\n\\\"awscloudformation\\\":$AWSCLOUDFORMATIONCONFIG\\\n}\"\nNOTIFICATIONSCONFIG=\"{\\\n\\\"Pinpoint\\\":{\t\n\\\"FCM\\\":{\n\\\"Enabled\\\":true,\\\n\\\"ApiKey\\\":\\\"$AWS_DEV_ANDROID_NOTIFICAIONS_API_KEY\\\"\\\n}\\\n}\\\n}\"\nCATEGORIES=\"{\\\n\\\"notifications\\\":$NOTIFICATIONSCONFIG\\\n}\"\n\namplify init \\\n--amplify $AMPLIFY \\\n--frontend $FRONTEND \\\n--providers $PROVIDERS \\\n--yes\n\n# --categories $CATEGORIES \\"
     - yarn@0: {}
     - cocoapods-install@2: {}
     - script@1:
         inputs:
-        - content: |-
+        - content: >-
             #!/usr/bin/env bash
+
             # fail if any commands fails
+
             set -e
+
             # debug log
+
             set -x
 
+
             # Create bundle for iOS
-            npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle  --assets-dest ios --sourcemap-output ./sourcemap.js
+
+            npx react-native bundle --platform ios --dev false --entry-file
+            index.js --bundle-output ios/main.jsbundle  --assets-dest ios
+            --sourcemap-output ios/main.jsbundle.map
         title: Create iOS bundle
     - certificate-and-profile-installer@1: {}
     - xcode-archive@3:
         inputs:
         - export_method: ad-hoc
-        - scheme: "$BITRISE_SCHEME"
-        - configuration: "$BITRISE_SCHEME"
+        - scheme: $BITRISE_SCHEME
+        - configuration: $BITRISE_SCHEME
     - cache-push@2: {}
     - deploy-to-bitrise-io@1: {}
     envs:

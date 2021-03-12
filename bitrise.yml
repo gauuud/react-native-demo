@@ -12,10 +12,40 @@ workflows:
     - cache-pull@2: {}
     - script@1:
         title: Do anything with Script step
-    - set-xcode-build-number@1:
         inputs:
-        - build_short_version_string: $VERSION_NUMBER
-        - plist_path: ./ios/VoximplantDemo/Info.plist
+        - content: >
+            #!/usr/bin/env bash
+
+            # fail if any commands fails
+
+            set -e
+
+            # debug log
+
+            set -x
+
+
+            version=$BITRISE_GIT_TAG
+
+
+            if [[ ${version} =~ ^(iOS|Android)-([0-9]+)\.([0-9]+)\.([0-9]+)-?.*$
+            ]]; then
+              all=${BASH_REMATCH[0]}
+              platform=${BASH_REMATCH[1]}
+              major=${BASH_REMATCH[2]}
+              minor=${BASH_REMATCH[3]}
+              patch=${BASH_REMATCH[4]}
+              version=${BASH_REMATCH[2]}.${BASH_REMATCH[3]}.${BASH_REMATCH[4]}
+            else
+              version="0.0.0"
+            fi
+
+            envman add --key VERSION_STRING --value $version
+    - set-ios-version@2:
+        inputs:
+        - bundle_version_short: $VERSION_STRING
+        - bundle_version: $BITRISE_BUILD_NUMBER
+        - info_plist_file: "./ios/VoximplantDemo/Info.plist"
     - yarn@0:
         inputs:
         - command: install
